@@ -1,50 +1,36 @@
 'use strict';
 
-module.exports.processemail = (event, context, callback) => {
-  // See https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-lambda-event.html
+const AWS = require('aws-sdk');
+
+const s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  region: process.env.AWSREGION,
+});
+
+const simpleParser = require('mailparser').simpleParser;
+
+module.exports.postprocess = async (event) => {
   // console.log('Received event:', JSON.stringify(event, null, 2));
-  const mail = event.Records[0].ses.mail;
-  const content = event.Records[0].ses.content;
+  const record = event.Records[0];
+  // Retrieve the email from your bucket
+  const request = {
+    Bucket: record.s3.bucket.name,
+    Key: record.s3.object.key,
+  };
 
-  const { timestamp, source, messageId } = mail;
-  // console.log('received mail', mail);
-
-  const { from, date, to, subject } = mail.commonHeaders;
-
-  console.log({
-    from: from[0],
-    to: to[0],
-    subject,
-    date,
-    content: content,
-  });
-
-  callback(null, {
-    from: from[0],
-    to: to[0],
-    subject,
-    date,
-    timestamp,
-    source,
-    messageId,
-  });
-};
-
-module.exports.processacceptreject = (event, context, callback) => {
-  // console.log('Received event:', JSON.stringify(event, null, 2));
-  const sesNotification = event.Records[0].ses;
-
-  // Check if any spam check failed
-  if (
-    sesNotification.receipt.spfVerdict.status === 'FAIL' ||
-    sesNotification.receipt.dkimVerdict.status === 'FAIL' ||
-    sesNotification.receipt.spamVerdict.status === 'FAIL' ||
-    sesNotification.receipt.virusVerdict.status === 'FAIL'
-  ) {
-    console.log('Dropping spam');
-    // Stop processing rule set, dropping message
-    callback(null, { disposition: 'STOP_RULE_SET' });
-  } else {
-    callback(null, null);
+  try {
+    const data = await s3.getObject(request).promise();
+    // console.log('Raw email:' + data.Body);
+    const email = await simpleParser(data.Body);
+    console.log({
+      from: email.from.text,
+      subject: email.subject,
+      date: email.date,
+      body: email.body,
+    });
+    return { status: 'success' };
+  } catch (Error) {
+    console.log(Error, Error.stack);
+    return Error;
   }
 };

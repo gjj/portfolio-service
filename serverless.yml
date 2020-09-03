@@ -2,30 +2,45 @@ service: email-piping-service
 
 frameworkVersion: ">=1.1.0"
 
+custom:
+  bucket: gshackathon
+  bucketRef: S3BucketGshackathon
+
 provider:
   name: aws
   runtime: nodejs12.x
   region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: "*"
 
 functions:
-  processemail:
-    handler: handler.processemail
-  processacceptreject:
-    handler: handler.processacceptreject
+  postprocess:
+    handler: handler.postprocess
+    events:
+      - s3:
+          bucket: ${self:custom.bucket}
+          event: s3:ObjectCreated:*
 
 resources:
   Resources:
-    GiveSESPermissionToInvokeProcessemailLambdaFunction:
-      Type: AWS::Lambda::Permission
+    S3EMailBucketPermissions:
+      Type: AWS::S3::BucketPolicy
       Properties:
-        FunctionName: { "Fn::GetAtt": [ "ProcessemailLambdaFunction", "Arn" ] }
-        Principal: ses.amazonaws.com
-        Action: 'lambda:InvokeFunction'
-        SourceAccount: { Ref: AWS::AccountId }
-    GiveSESPermissionToInvokeProcessacceptrejectLambdaFunction:
-      Type: AWS::Lambda::Permission
-      Properties:
-        FunctionName: { "Fn::GetAtt": [ "ProcessacceptrejectLambdaFunction", "Arn" ] }
-        Principal: ses.amazonaws.com
-        Action: 'lambda:InvokeFunction'
-        SourceAccount: { Ref: AWS::AccountId }
+        Bucket: 
+          Ref: ${self:custom.bucketRef}
+        PolicyDocument:
+          Statement:
+            - Principal: 
+                Service: "ses.amazonaws.com"
+              Action:
+                - s3:PutObject
+              Effect: Allow
+              Sid: "AllowSESPuts"
+              Resource: 
+                Fn::Join: ['', ['arn:aws:s3:::', Ref: "${self:custom.bucketRef}", '/*'] ]
+              Condition:
+                StringEquals:
+                  "aws:Referer": { Ref: AWS::AccountId }
