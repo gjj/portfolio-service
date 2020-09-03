@@ -1,8 +1,10 @@
 'use strict';
 
-module.exports.processheader = (event, context, callback) => {
+module.exports.processemail = (event, context, callback) => {
+  // See https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-lambda-event.html
   // console.log('Received event:', JSON.stringify(event, null, 2));
   const mail = event.Records[0].ses.mail;
+  const content = event.Records[0].ses.content;
 
   const { timestamp, source, messageId } = mail;
   // console.log('received mail', mail);
@@ -14,7 +16,7 @@ module.exports.processheader = (event, context, callback) => {
     to: to[0],
     subject,
     date,
-    body: mail.body,
+    content: content,
   });
 
   callback(null, {

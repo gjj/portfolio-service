@@ -8,17 +8,17 @@ provider:
   region: us-east-1
 
 functions:
-  processheader:
-    handler: handler.processheader
+  processemail:
+    handler: handler.processemail
   processacceptreject:
     handler: handler.processacceptreject
 
 resources:
   Resources:
-    GiveSESPermissionToInvokeProcessheaderLambdaFunction:
+    GiveSESPermissionToInvokeProcessemailLambdaFunction:
       Type: AWS::Lambda::Permission
       Properties:
-        FunctionName: { "Fn::GetAtt": [ "ProcessheaderLambdaFunction", "Arn" ] }
+        FunctionName: { "Fn::GetAtt": [ "ProcessemailLambdaFunction", "Arn" ] }
         Principal: ses.amazonaws.com
         Action: 'lambda:InvokeFunction'
         SourceAccount: { Ref: AWS::AccountId }
