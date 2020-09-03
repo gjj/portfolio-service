@@ -1,0 +1,13 @@
+{
+  "name": "email-piping-service",
+  "description": "Receive an email, trigger a lambda function to process header and contents.",
+  "version": "1.0.0",
+  "author": "La Casa de Papel",
+  "license": "MIT",
+  "dependencies": {
+    "eslint": "^5.15.3",
+    "eslint-config-airbnb-base": "^10.0.1",
+    "eslint-plugin-import": "^2.16.0",
+    "mailparser": "^2.3.4"
+  }
+}
