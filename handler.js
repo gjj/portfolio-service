@@ -27,7 +27,7 @@ module.exports.postprocess = async (event) => {
       from: email.from.text,
       subject: email.subject,
       date: email.date,
-      body: email.body,
+      body: email.text,
     });
     return { status: 'success' };
   } catch (Error) {
