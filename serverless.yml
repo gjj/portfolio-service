@@ -2,6 +2,9 @@ service: email-piping-service
 
 frameworkVersion: ">=1.1.0"
 
+plugins:
+  - serverless-plugin-include-dependencies
+
 custom:
   bucket: gshackathon
   bucketRef: S3BucketGshackathon

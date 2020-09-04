@@ -22,6 +22,7 @@ module.exports.postprocess = async (event) => {
     const data = await s3.getObject(request).promise();
     // console.log('Raw email:' + data.Body);
     const email = await simpleParser(data.Body);
+    console.log(email);
     console.log({
       from: email.from.text,
       subject: email.subject,

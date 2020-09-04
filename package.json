@@ -5,9 +5,10 @@
   "author": "La Casa de Papel",
   "license": "MIT",
   "dependencies": {
-    "eslint": "^5.15.3",
-    "eslint-config-airbnb-base": "^10.0.1",
-    "eslint-plugin-import": "^2.16.0",
-    "mailparser": "^2.3.4"
+    "aws-sdk": "^2.746.0",
+    "mailparser": "^2.8.1"
+  },
+  "devDependencies": {
+    "serverless-plugin-include-dependencies": "^4.1.0"
   }
 }
