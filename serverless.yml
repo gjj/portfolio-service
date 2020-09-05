@@ -20,8 +20,8 @@ provider:
       Resource: "*"
 
 functions:
-  postprocess:
-    handler: handler.postprocess
+  postProcess:
+    handler: handler.postProcess
     events:
       - s3:
           bucket: ${self:custom.bucket}

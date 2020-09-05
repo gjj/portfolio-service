@@ -11,7 +11,7 @@ const s3 = new AWS.S3({
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-module.exports.postprocess = async (event, context) => {
+module.exports.postProcess = async (event, context) => {
   // console.log('Received event:', JSON.stringify(event, null, 2));
   const record = event.Records[0];
   // Retrieve the email from your bucket
@@ -142,33 +142,41 @@ module.exports.portfolioRecords = async (event) => {
   let responseCode = 200;
   console.log("request: " + JSON.stringify(event));
 
+  let email = "";
+
   if (event.queryStringParameters && event.queryStringParameters.email) {
-    console.log("Received name: " + event.queryStringParameters.name);
-    name = event.queryStringParameters.name;
+    console.log("Received email: " + event.queryStringParameters.email);
+    email = event.queryStringParameters.email;
   }
 
   const params = {
     TableName: "gs_portfolio",
-    ProjectionExpression: "id, email, date, orderSide, stockExchange, stockCode, currency, price, quantity",
-    FilterExpression: "email equal :email",
+    ProjectionExpression: "id, email, #date, orderSide, stockExchange, stockCode, currency, price, quantity",
+    FilterExpression: "email = :email",
+    ExpressionAttributeNames: {
+      "#date": "date",
+    },
     ExpressionAttributeValues: {
-      ":email": email,
+      ":email": email
     }
   };
-  // Call DynamoDB to add the item to the table
-  await docClient.put(params).promise().then(
+
+  // Retrieve from DynamoDB
+  const result = [];
+
+  await docClient.scan(params).promise().then(
     function (data) {
-      console.log("DynamoDB success", data);
+      console.log("DynamoDB scan succeeded.");
+      data.Items.forEach(function (record) {
+        result.push(record);
+      });
     },
     function (error) {
-      console.log("DynamoDB error", error);
+      console.log("DynamoDB error.", error);
     }
   );
 
-  let responseBody = {
-    message: greeting,
-    input: event
-  };
+  const responseBody = result;
 
   // The output from a Lambda proxy integration must be 
   // in the following JSON object. The 'headers' property 
@@ -176,12 +184,9 @@ module.exports.portfolioRecords = async (event) => {
   // ones. The 'body' property  must be a JSON string. For 
   // base64-encoded payload, you must also set the 'isBase64Encoded'
   // property to 'true'.
-  let response = {
+  const response = {
     statusCode: responseCode,
-    headers: {
-      "x-custom-header": "my custom header value"
-    },
-    body: JSON.stringify(responseBody)
+    result: responseBody
   };
   console.log("response: " + JSON.stringify(response))
   return response;
