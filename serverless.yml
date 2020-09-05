@@ -26,6 +26,8 @@ functions:
       - s3:
           bucket: ${self:custom.bucket}
           event: s3:ObjectCreated:*
+  portfolioRecords:
+    handler: handler.portfolioRecords
 
 resources:
   Resources:
