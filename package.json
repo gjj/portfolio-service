@@ -6,9 +6,11 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.746.0",
-    "mailparser": "^2.8.1"
+    "mailparser": "^2.8.1",
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
+    "eslint": "^7.8.1",
     "serverless-plugin-include-dependencies": "^4.1.0"
   }
 }
