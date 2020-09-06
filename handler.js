@@ -11,7 +11,7 @@ const s3 = new AWS.S3({
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-module.exports.postProcess = async (event, context) => {
+module.exports.postProcess = async (event) => {
   // console.log('Received event:', JSON.stringify(event, null, 2));
   const record = event.Records[0];
   // Retrieve the email from your bucket
@@ -138,14 +138,12 @@ module.exports.postProcess = async (event, context) => {
   }
 };
 
-module.exports.portfolioRecords = async (event) => {
+module.exports.portfolioRecords = async (event, context, callback) => {
   let responseCode = 200;
-  console.log("request: " + JSON.stringify(event));
-
   let email = "";
 
   if (event.queryStringParameters && event.queryStringParameters.email) {
-    console.log("Received email: " + event.queryStringParameters.email);
+    console.log("Received queryStringParameters.email: " + event.queryStringParameters.email);
     email = event.queryStringParameters.email;
   }
 
@@ -184,9 +182,14 @@ module.exports.portfolioRecords = async (event) => {
   // ones. The 'body' property  must be a JSON string. For 
   // base64-encoded payload, you must also set the 'isBase64Encoded'
   // property to 'true'.
+  // See https://stackoverflow.com/a/46114185/950462 and https://stackoverflow.com/a/43709502/950462
   const response = {
     statusCode: responseCode,
-    result: responseBody
+    isBase64Encoded: false,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
+    body: JSON.stringify(responseBody),
   };
   console.log("response: " + JSON.stringify(response))
   return response;
